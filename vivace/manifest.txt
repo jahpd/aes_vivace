@@ -1,0 +1,12 @@
+The LaTeX class `aesbr', version 1.0c, distributed in
+January 26, 2009, contains the following nine files:
+
+readme.txt      --  A ``Read Me'' file
+manifest.txt    --  The file you are reading
+aesbr.cls       --  LaTeX2e class file
+aesbr.cfg       --  aesbr class configuration file
+aeslogo.pdf     --  AES logo (PDF)
+aeslogo.eps     --  AES logo (EPS)
+template.tex    --  A template file
+bib.bib         --  Bibtex file used in template.tex
+aes.bst         --  AES bibliography style file

@@ -1,0 +1,318 @@
+\documentclass
+  [ams,pdfout]% class options
+        {aesbr}
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[english,brazil]{babel}
+\RequirePackage{textcomp}
+\RequirePackage{url}
+\begin{document}
+\begin{TitlePage}
+        \Title{Título do Artigo}
+        \RunningTitle{Título Curto do Artigo} % short title
+        \RunningAuthors{Fulano et al.}
+        \Author
+                [fulano@email.org]% email
+                {Fulano de Tal}% Author name (printed in title page)
+                \Affil
+                        [A]% chave/key (optional argument)
+                        {%
+                                Universidade,
+                                Instituto,
+                                Departamento\\
+                                Cidade, Estado, Código Postal, País
+                        }
+        \Author
+                [cicrano@email.com]
+                {Cicrano de Tal}
+                \Affilref[A]% mesma afiliação de "fulano" (chave A)
+                                   % the same affiliation as "fulano" (key A)
+        \Author
+                [beltrano@email.fr]
+                {Beltrano de Tal}
+                \Affil
+                                University,
+                                Department of Civil Engineering\\
+                                City, State, Postal Code, Country
+                        }%
+        \Abstract{%
+        
+        }
+\end{TitlePage}
+%
+% Digite os títulos das seções EM LETRAS MAIÚSCULAS
+% Type the section titles IN CAPITAL LETTERS.
+\section{INTRODUÇÃO}
+
+Em novembro de 2011, um trio de \emph{live coding} (?) called \emph{FooBarBaz} fez sua primeira apresentação para uma grande audiência (?). Os \emph{performers} usaram duas instâncias do \emph{software} ChucK (?) e uma instância de um \emph{mixer} construído sob PureData (?). Através da edição de arquivos ChucK, dois \emph{live coders} processavam ou sintetizavam amostras sonoras digitais : um primeiro manipulava listas numéricas, criando operações musicais mnemonicas como retrogradação e transposi\c{c}\~a. Um segundo \emph{live coder} criava objetos musicais temporalmente largos, contribuindo para grandes arcos expressivos. A mixagem dos sinais de áudio ficava por conta do terceiro \emph{live coder} através de gestos manuais, captados por uma c\^amera e processados por algoritmos customizados de detec\c{c}\~ao de cor, e interpretados como controles de estereofonia (?).
+
+Baseados nas experiências de edição, síntese e mixagem citadas, desenvolvemos Vivace: Uma aplicação web (?) dedicada a performance colaborativa no campo do audiovisual. Este artigo apresentará a elaboração e uso das interfaces de edição e mixagem (de áudio) desenvolvidas (fig. X), bem o uso das tecnologias web que viabilizaram ferramentas customizadas. Por fim faremos uma breve reflexão dos processos envolvidos na atividade de edição e mixagens tradicionais com aqueles vivenciados com o uso da mais recente versão do aplicativo.
+
+\section{VIVACE, CONTRAPONTO MUSICAL COLABORATIVO }
+
+Neste ambiente pressupomos uma manipulação artística-técnica de \emph{vozes}, que são amostras de áudio de durações diversas em formato \emph{.wav} e/ou \emph{.mp4}. A manipulação se dá pelo uso das ferramentas desenvolvidas para o contraponto musical (edição) e estereofonia (mixagem)
+
+\begin{itemize}
+    \item Edição de um código-fonte (que chamaremoss de vivace-lang), responsável pela manipulação dos materiais sonoros.
+    \item Um mixer compactado com um controle básico de estereofonia (ganho, panoramização, equalizador de 3 bandas).
+\end{itemize}
+
+Abaixo, temos uma definição das vozes no código-fonte do Vivace, em javascript. Para cada voz definimos um nome, o arquivo a ser utilizado, e seu tipo (no nosso caso, áudio).
+ 
+\begin{Verbatim}[fontfamily=courier, xleftmargin=\parindent]
+Vivace.environment = [
+        {name: 'foo', fileName: 'kick.wav', type: 'audio'},
+        {name: 'bar, fileName: 'dj.wav', type: 'audio'},
+        {name: 'baz', fileName: 'snare.wav', type: 'audio'}
+]
+\end{Verbatim}
+
+\subsection{EDIÇÃO E MIXAGEM}
+
+Utilizando sintaxes relativas a \emph{Orientação a objetos} (???), podemos fazer operarações comuns na prática de composição musical (reverter, inverter, transpor), aplicadas aos \emph{frames} (ref: WebAudio API) da amostra de áudio (FABBRI, R.); "Seja a sequência Ti = {ti} um conjunto ordenado de amostras [frames] reais separadas (...) uma [amostra sonora] de duração \delta se apresenta como uma sequência de b: fac amostras
+
+https://ubuntuone.com/2GUARZyGf8wDCqt5HhidEx Equação 2.1
+
+No Vivace caracterizamos a essas amostras digitais, propriedades de notas musicais. Canonicamente, as notas possuem ao menos duração, volume, altura e timbre.(LACERDA in FABBRI, p.35); adicionamos também o conceito de grão sonoro (SMALLEY?) para as amostras e todas propriedades são passíveis de serem  tratadas quantitativamente (ROEDERER in FABBRI).
+
+Através do vivace-lang, o usuário pode definir um conjunto de valores numéricos (\emph{Arrays} de inteiros e decimais) para cada propriedade:
+\begin{itemsize}
+    \item \emph{pos}: posição da amostra (no buffer da voz) a ser tocada, em segundos.
+    \item \emph{dur}: duração da amostra selecionada na voz, em segundos.
+    \item \emph{gdur}: duração do  amostra selecionada na voz, em segundos. 
+    \item \emph{amp}: ganho da voz  .
+\end{itemsize}
+
+Esses valores podem ser \emph{literais}, \emph{operados} ou \emph{gerados}:
+
+\begin{Verbatim}[fontfamily=courier, xleftmargin=\parindent]
+# [1, 2, 3] são as posições de uma amostra de áudio, em segundos
+foo.pos = [1, 2, 3]                                    # literal
+foo.pos = [.1, .2, .3] reverse                        # operação: o resultado é [0.3, 0.2, 0.1]
+foo.pos = [1, 2, 3] inverse                        # operação: o resultado é [1, 0, -1]
+foo.pos = [1, 2, 3] transpose +2                # operação: o resultado is [3, 4, 5]
+foo.dur = [2, 3, 4]                                    # literal
+foo.dur = [2, 3, 4] reverse                        # operação: o resultado é [4, 3, 2]
+foo.dur = [2, 3, 4] inverse                        # operação: o resultado é [2, 1, 0]
+foo.dur = [2, 3, 4] transpose +1                # operação: o resultado is [3, 4, 5]
+
+# podemos gerar esses valores
+foo.pos = [1/i+1 for i in [1, 2, 3]]                 #gerado: o resultado é [1/2, 1/3, 1/4]
+
+# ou combina-los com as operações
+foo.dur = [1/i+1 for i in [1, 2, 3]] reverse     #gerado: o resultado é [1/4, 1/3, 1/2]
+\end{Verbatim}
+
+Propriedades sonoras como volume, timbre podem ser manipuladas no vivace-lang através das propriedades das vozes como volume (\emph{amp}) e filtragem (\emph{high, medium, low}). O controle de posições espaciais virtuais das vozes fica por conta propriedade \emph{pan}, que define um espaço estereofônico de dois canais (CONDAMINES)
+
+\begin{Verbatim}[fontfamily=courier, xleftmargin=\parindent]
+# método amp controla o ganho
+foo.amp = 1                                   
+bar.amp = 0.5
+baz.amp = 0.25
+
+# método pan controla a panoramização 
+# de um sistema estereofônico 
+# de dois canais
+foo.pan = -1    #Esquerdo
+bar.pan = 0    #centro
+baz.pan = 1    #direito
+
+# high: BiquadFilter de frequencias altas
+# medium: BiquadFilter de frequencias medias
+# low: BiquadFilter de frequências baixas
+# freq: a frequencia de corte
+# Q: o fator "qualidade"
+# amp: o ganho do filtro
+foo.high = {freq: 2000, Q: 0.5, amp: 0.75}
+bar.medium = {freq: 800, Q: 1, amp: 0.4}
+baz.low = {freq: 200, Q: 0.5, amp: 0.67}
+\end{Verbatim}
+
+\section{Máquina de áudio}
+
+Antes da API Web Audio, a única forma de utilzar arquivos de áudio era usando plugins (como \emph{Flash}). Criada em 20XY, esta biblioteca permite processamento de áudio em navegadores \emph{web}. As rotinas de áudio são escritas em código nativo (C++ e Assembly) para garantir máxima performance. É baseada no paradigma de \emph{grafos de unidades de áudio}, onde se especifica uma coleção de nós (objeto \emph{AudioNode}) e rotinas de conexão e desconexão entre eles. Manipulando esses nós, podemos criar módulos diversos. Entre algumas de nossas motivações com Web Audio API, estão a síntese, ganho, equalização, expansão multicanal (estereofonia de 2.0 e 5.1 canais) e efeitos (reverb):
+
+\begin{figure}[htpb]
+  \begin{center}
+    \includegraphics[scale=.5]{img/audio_graph.png}
+    \caption{}
+    \label{figura:vivace}
+  \end{center}
+\end{figure}
+
+Para criar um contexto de áudio (???), primeiro devemos checar a plataforma do navegador; feito isso podemos criar nossos nós de áudio e rotear adequadamente as conexões dos módulos. Abaixo temos um trecho do arquivo api.coffee, onde definimos as vozes para o ambiente vivace-lang e um contexto de áudio que administrará as correntes de processamento de áudio: 
+
+\begin{Verbatim}[fontfamily=courier, xleftmargin=\parindent]
+# arquivo api.coffee, linha 39
+if typeof AudioContext != "undefined" 
+        # para navegadores não-webkit
+        Vivace.audiocontext = new AudioContext() 
+else if typeof webkitAudioContext != "undefined"
+        #para navegadores webkit (chromium e safari)
+        Vivace.audiocontext = new webkitAudioContext()
+else
+        throw new Error 'AudioContext not supported.'
+\end{Verbatim}
+
+Toda voz no Vivace é representado como uma corrente de nós, como mostrado na figura X. Todas parâmetros das unidades dentro desta corrente (posição espacial, ganho, frequencias de corte de filtros) são definidos em uma variável chamada de \emph{fizzy} e podem ser manipulados editando o código vivace-lang, ou por \emph{sliders} da Interface do Usuário (UI). Este tipo de de interface é mais familiar a músicos e técnicos de som, tornando possível um tratamento estereofônico adequado.
+
+\begin{Verbatim}[fontfamily=courier, xleftmargin=\parindent]
+#some definitions of our mixer
+_mixerDef = () ->
+        this.pan = 0                            # referencia espacial central em 2.0
+        this.gain = Math.sqrt(2)           #  -3dB sound 
+        this.high = 2000                      # 2kHz
+        this.Q_high = 0.5                    # fator Q
+        this.gain_high = 0                   # high gain
+        this.medium = 2000                # 2kHz
+        this.Q_medium = 0.5              # fator Q
+        this.gain_medium = 0             # high gain
+        this.low = 2000                      # 2kHz
+        this.Q_low = 0.5                    # fator Q
+        this.gain_low = 0                   # high gain
+
+#configure audio nodes
+audiofy: (voicename, fizzy, buffer) ->
+    #get audio src
+    voice = Vivace.voices[voicename]
+
+    #create a src node with provided buffer
+    voice.audionodes.src = Vivace.audiocontext.createBufferSource();
+    voice.audionodes.src.buffer = buffer
+
+    #ROUTING PROCESS
+    #to each audio parameter in fizzy, create an appropriate AudioNode
+    $.each fizzy, (k, param) ->
+        #add node gain
+        if k == 'gain' 
+            voice.audionodes[k] = Vivace.audiocontext.createGain()
+            voice.audionodes[k].gain.value = param        
+        #add pan
+        else if k == 'pan' 
+            voice.audionodes[k] = Vivace.audiocontext.createPanner("equalpower", "exponential")
+            voice.audionodes[k].setPosition 0, 0, 0
+        else if k == 'high' 
+            voice.audionodes[k] = Vivace.audiocontext.createBiquadFilter()
+            voice.audionodes[k].type = 1                                                        
+            voice.audionodenes
+\end{Verbatim}
+\section{CONTEÚDO}
+Para garantir que os artigos do Congresso da AES sejam consistentes com os objetivos da AES Brasil, as instruções abaixo devem ser consideradas pelos autores.
+
+O conteúdo técnico deve ser preciso e coerente. Citação a trabalhos anteriores e/ou de terceiros devem ter seus respectivos créditos.
+
+Se o artigo descrever um produto, o conteúdo deve enfocar os aspectos técnicos deste produto (circuito, leiaute, especificações, funções, aplicações, etc.).
+
+Logomarcas de empresas não devem ser usadas. Nomes de empresas e modelos de equipamentos não devem ser colocados no título ou no resumo, e devem ser mínimos no texto (devem-se usar descrições genéricas).
+
+Símbolos e marcas registradas não podem ser colocados no título e/ou no resumo, e preferencialmente não devem ser usadas no texto. Caso marcas registradas apareçam no texto, estas devem indicar junto ao nome o símbolo ``\texttrademark'' e deve-se incluir uma nota de rodapé dizendo quem é (são) o(s) detentor(es) destas marcas. Isso deve ser feito na primeira vez que a(s) marca(s) registrada(s) aparecer(em).
+%
+\subsection{Referências Bibliográficas}
+
+As referências devem ser numeradas e listadas ao final do texto, na seção ``Referências Bibliográfica'', e devem ser citadas no texto consecutivamente em ordem numérica e entre colchetes.
+% Exemplo: [1]
+Pode-se gerar as referências bibliográficas através do comando \verb|\cite| (\cite{Lam94,ClarkAF}). O formato da bibliografia é determinado pelo arquivo de estilo bibliográfico ``aes.bst'' distribuído com esta classe.
+%
+\subsection{Estilo do texto}
+O texto deve ser de fácil entendimento e gramaticamente correto. Palavras e frases não devem ser abreviadas em títulos e resumos, nem da primeira vez que aparecem.
+
+Devem-se usar unidades métricas de acordo com o Sistema Internacional de Unidades (SI) \cite{Inmetro12}. Na Tabela~\ref{tab:units} estão listadas algumas unidades do SI mais freqüentemente usadas, e algumas que não são do SI.
+
+\begin{table}[!ht]
+\caption{Unidades SI e outras}
+\label{tab:units}
+\vspace*{10pt}
+\centering
+\small
+\begin{tabular}{ll}
+\textit{Nome da Unidade}        &       \textit{Símbolo da Unidade}\\ \hline
+ampere                          &       A\\
+bit ou bits                     &       como escrito\\
+bytes                           &       como escrito\\
+decibel                         &       dB\\
+ângulo (geométrico)             &       $^\textrm{o}$\\
+farad                           &       F\\
+gauss                           &       Gs\\
+grama                           &       g\\
+henry                           &       H\\
+hertz                           &       Hz\\
+hora                            &       h\\
+polegada                        &       in\\
+joule                           &       J\\
+kelvin                          &       K\\
+kilohertz                       &       kHz\\
+kilohm                          &       k$\Omega$\\
+litro                           &       l, L\\
+megahertz                       &       MHz\\
+metro                           &       m\\
+microfarad                      &       $\mu$F\\
+micrometro                      &       $\mu$m\\
+microsegundo                    &       $\mu$s\\
+milliampere                     &       mA\\
+millihenry                      &       mH\\
+millimetro                      &       mm\\
+millivolt                       &       mV\\
+minuto (tempo)                  &       min\\
+minuto (geométrico)             &       '\\
+nanosegundo                     &       ns\\
+oersted                         &       Oe\\
+ohm                             &       $\Omega$\\
+pascal                          &       Pa\\
+picofarad                       &       pF\\
+segundo (tempo)                 &       s\\
+segundo (geométrico)            &       "\\
+siemens                         &       S\\
+tesla                           &       T\\
+volt                            &       V\\
+watt                            &       W\\
+weber                           &       Wb\\
+\end{tabular}
+\end{table}
+%\section{DIREITO AUTORAL (COPYRIGHT)}
+O texto entre linhas, contido no topo da primeira página do artigo de Convenção da AES Brasil, é de propriedade da \emph{Audio Engineering Society} e não pode ser reproduzido sem permissão. Os direitos 
+sobre o conteúdo de um artigo de Convenção/Congresso da AES Brasil são do autor ou autores.
+No entanto, submetendo um artigo para apresentação em uma Convenção/Congresso da AES, o autor estará concordando que o \emph{AES Journal} terá a preferência para publicação. Caso aceito para publicação 
+no \emph{AES Journal} ou outro ``\emph{Special Issue}'' da \emph{AES}, será solicitada ao(s) autor(es) a transferência dos direitos autorais.
+%
+
+\section{FIGURAS E TABELAS}
+Figuras, diagramas, gráficos, etc. têm que ser visíveis em impressão preto e branco (P\&B). Se forem coloridos, certifique-se de que as identificações serão coerentes em impressão P\&B. Isso pode ser feito com indicações textuais no próprio gráfico. Use linhas não-menores que 1/2 ponto. As figuras podem ocupar uma ou duas colunas.
+
+Figuras, tabelas e ilustrações devem ser colocadas seqüencialmente no texto, e próximas do local onde se faz referência a elas, sempre que possível. Todas as figuras devem ser numeradas e referenciadas no texto por extenso (por exemplo: ``Figura~\ref{fig:logo}'', e não ``Fig.~\ref{fig:logo}'').
+
+\begin{figure}[h!]
+  \centering
+        \ifpdfout
+            \includegraphics[width=2cm]{aeslogo.pdf}% (pdflatex)
+        \else
+                \includegraphics[width=2cm]{aeslogo.eps}% (latex)
+        \fi
+  \caption{Logotipo da AES}
+  \label{fig:logo}
+\end{figure}
+
+Fotografias e imagens gráficas devem ser salvas em baixa resolução sempre que possível (de 72 a 300 dpi) desde que preservada a qualidade e legibilidade.
+
+\section{EQUAÇÕES}
+As equações devem ser numeradas seqüencialmente, entre parênteses, estando destacadas em linha própria. São citadas no texto da seguinte forma: ``Equação~(\ref{eq:1})''.
+
+Para facilitar a composição de fórmulas, use-se a opção de classe \verb|ams|. Esta opção carrega os pacotes \verb|amsmath|, \verb|amssymb| e \verb|amsthm|. As equações podem ser destadacas em linha própria com o ambiente \verb|equation|. Por exemplo:
+\begin{equation}
+\label{eq:1}
+  \left\{\,
+    x\biggm|\int_{0}^x t^{2}\,dt\leq5
+  \,\right\}.
+\end{equation}
+
+Equações que não couberem em uma coluna podem ser ajustadas em duas linhas; pode-se fazer isso com o pacote \textsf{breqn} usado para quebrar a equação em duas linhas.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% BIBLIOGRAPHY EXAMPLE
+%
+% para gerar a bibliografia execute "bibtex template"
+% to generate the bibliography please execute "bibtex template"
+\bibliographystyle{aes} % style aes.bst
+\bibliography{bib} % bibliography file in bibtex format
+%
+\end{document}

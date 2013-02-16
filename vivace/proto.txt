@@ -1,0 +1,152 @@
+intro web audio => como criar nós de um sistema basico de mixagem  (src, gain, filter, pan) => como lidar com o tempo => tocando => aplicacões (dataflow, vivace, stereomix)
+
+Referencias (bibliograficas, metodologicas, etc.)
+
+https://webaudio-io2012.appspot.com/#1
+http://forresto.github.com/dataflow-webaudio/
+http://www.html5rocks.com/en/tutorials/webaudio/intro/
+https://dvcs.w3.org/hg/audio/raw-file/tip/webaudio/specification.html
+http://creativejs.com/resources/web-audio-api-a-bit-more-advanced/
+https://github.com/jahpd/stereomix
+https://github.com/automata/vivace
+sobre tempo/agendamento (uma das coisas mais chatinhas): http://www.html5rocks.com/en/tutorials/audio/scheduling/
+Mixing Audio - Concepts, Pratices and tools -> Rohey Izhaki (focal press)
+
+Se o artigo descrever um produto, o conteúdo deve enfocar os aspectos técnicos deste produto (circuito, leiaute, especificações, funções, aplicações, etc.).
+
+Área: 
+- Áudio na Internet
+- Processamento Analógico e Digital de Sinais de Áudio
+
+Título: (Sugestões)
+- Roteamento e DSP em Vivace-lang através da Web Audio API
+- Edição e mixagem colaborativa de materiais sonoros no ambiente Vivace 
+
+Missões:
+- Falar sobre o Vivace
+- Falar sobre as ferramentas de mixagem (no codigo, e no mixer)
+- Falar sobre o roteamento de áudio no vivace
+- Falar sobre DSP do Vivace
+- Falar sobre o dat.GUI
+- Falar sobre o paradigma da mixagem
+- Falar sobre futuras implementações
+- Conclusões
+-Compilar latex
+
+Abstract:
+
+(Retirado do artigo do vivace, iniciando por ele para criar a atmosfera do Vivace, e para focar no assunto de áudio)
+
+This paper describes principles and the design in routing and digital signal processing (DSP) in Vivace, a live coding language and environment built with Web technologies to be executed, ideally, in any ordinary browser. It starts by reviewing what motivated and inspired the creation of the language, in the context of actual performances. That leads to speciﬁcations in audio's environment: how it is routed and then executed using the recently created real-time Web Audio API; and how this will be under user's control with the dat.GUI API. A brief discussion is presented on why the Web is an environment of interest to collaborative audio edit-and-mix and how it affects the performances.
+
+Introduction
+
+In November of 2011, a live coding trio called FooBarBaz (?) unleashed its ﬁrst presentation for a wide audience. Its performers were using two instances of ChucK (?) and a dedicated mixing Puredata + Analog Mixer instance. [...] The live coders manipulated parameters of audio ﬁles by editing lists of numerical values together with mnemonic operations like retrograde and transposition. The other live coder focused on more ﬂuid lines with large sounds having evolving characteristics; this contributed with larger musical arcs. Audio mixing with Puredata was carried out by the third performer literally using handwaving gestures tracked by a camera and our custom-designed color detection algorithms.
+
+Based on the aforementioned elements, a new language was designed: Vivace(?). To avoid software conﬁguration and to make it easy to share the session – and the system itself – with everyone, the Web was chosen as the running environment for Vivace. On every new session performed using Vivace, new principles were added into the language and, at the same time, into our artistic behavior
+
+Atualmente Vivace está na versão XXX, e conta com as seguintes ferramentas: 1) Um input para texto, onde os usuários compartilham um código, no qual podem editar(?) em tempo-real amostras sonoras em formato .wav e amostras de vídeo em formato .mp4 ; 2) Um controle de mixagem básico compartilhado (volume, pan, equalização de 3 bandas). Através da edição do código e/ou dos controles de mixagem, os elementos audio-visuais serão modificados (cortes, permutação, duração, volume, filtragem, panoramização)
+
+Este artigo apresentará como foram desenvolvidas as ferramentas de edição de áudio (através do código-texto nas especificações da linguagem Vivace, fig. X), e as arquiteturas   de roteamento do áudio e DSP que possibilita a edição e mixagem compartilhada, bem como uma breve reflexão dos processos envolvidos na atividade de edição e mixagens tradicionais com aqueles vivenciados no ambiente Vivace. 
+
+Editing and Mixing with Vivace
+
+
+Web Audio API and routing paradigm
+
+From https://dvcs.w3.org/hg/audio/raw-file/tip/webaudio/specification.html:
+
+This specification describes a high-level JavaScript API for processing and synthesizing audio in web applications. The primary paradigm is of an audio routing graph, where a number of AudioNode objects are connected together to define the overall audio rendering. The actual processing will primarily take place in the underlying implementation (typically optimized Assembly / C / C++ code), but direct JavaScript processing and synthesis is also supported.
+
+This API is designed to be used in conjunction with other APIs and elements on the web platform, notably: XMLHttpRequest (using the responseType and response attributes). For games and interactive applications, it is anticipated to be used with the canvas 2D and WebGL 3D graphics APIs.
+
+- HTML5, audio tags
+- Audio em Javascript
+- AudioContext e AudioNodes
+
+Routing and Control Audio in Vivace
+
+A criação de nós de áudio, roteamento e controles gráficos no ambiente vivace é feito, em uma de suas versões, pelo arquivo mixer.coffee, através de um uso integrado da API Web Audio com a API dat.GUI:
+
+#some definitions of our mixer
+fizzy = () ->
+        this.pan = 0                        #middle spatial reference
+        this.gain = Math.sqrt(2)        # -3dB sound 
+
+#create a new gui
+gui = new dat.GUI()
+
+# vivace mixer
+# treat a object:
+mixer = 
+        #configure audio nodes
+        audiofy: (voicename, fizzy, buffer) ->
+                #get audio src
+                voice = Vivace.voices[voicename]
+
+                #create a src node with provided buffer
+                voice.audionodes.src = Vivace.audiocontext.createBufferSource();
+                voice.audionodes.src.buffer = buffer
+
+                #ROUTING PROCESS
+                #to each audio parameter, create an appropriate AudioNode
+                $.each fizzy, (k, param) ->
+                        #add node gain
+                        if k == 'gain' 
+                                gain = voice.audionodes[k] = window.Vivace.audiocontext.createGain()
+                                gain.gain.value = param        
+                        #add pan
+                        else if k == 'pan' 
+                                pan = voice.audionodes[k] = window.Vivace.audiocontext.createPanner("equalpower", "exponential")
+                                pan.setPosition 0, 0, 0                                                        
+                voice.audionodes
+
+        # 
+        #create an mixer to specific voice in Vivace
+        create: (voicename, options, callback) ->
+                #create a folder to voicename
+                folder = gui.addFolder(voicename)
+
+                #create controls
+                voicefizzy = new fizzy()
+                controls = {}
+                $.each options, (option, value) ->
+                        if option != 'buffer' then controls[option] = folder.add voicefizzy, option, value[0], value[1]
+
+                #now add a new audionode to specific voice
+                audionodes = Vivace.mixer.audiofy voicename, voicefizzy, options.buffer
+                callback audionodes, controls
+
+#expose
+window.Vivace.mixer = mixer
+DSP in Vivace
+
+Mixagem: revisão do conceito
+
+ There are great differences between the production process of recorded music and sequenced music, and these affect the mixing process. Figure 4.1 shows the common production chain of recorded music. Producers might have their input on each stage, but they are mostly concerned with the arrangement and recording stages. Each stage has an impact on the stages succeeding it, yet each of them can be done by different people. Mixing is largely dependent on both the arrangement and recordings. For example, an arrangement might involve only one percussion instrument, say a shaker. If panned center in a busy mix, it is most likely to be masked by other instruments. But panning it to one side can create an imbalanced stereo image. It might be easier for the mixing engineer to have a second percussion instrument, say a tambourine, so the two can be panned left and right, respectively. A wrong microphone placement during the recording stage can result in the lack of body for the acoustic guitar. Recreating this missing body during mixdown is a challenge. Some recording decisions are, to be sure, mixing decisions. For example, the choice of stereo-miking technique for drum overheads determines the localization and depth of the various drums in the final mix. Altering these aspects during mixdown takes effort. (IZHAKI, R.)
+ 
+ Songwriting -> Arranging -> recording -> mixing -> mastering
+                                            |   A
+                                           V   |
+                                          editing 
+
+No aplicativo web Vivace, atualmente na versao XXX, buscamos integrar a composição (songwriting, arranging), edição e mixagem, de maneira que todos estes parâmetros deixam de ser hierárquicos, i.e., em ordem sequencial (como apresentado por IZHAKI), possuindo uma estrutura ..........
+
+Sistema de mixagem
+
+- quais sao os modulos?
+    - ganho
+    - solo, mute
+    - eq
+    - input, output
+    - play, stop
+    - tempo, metronomo
+-Grafos
+
+Metodos de roteamento dos nos
+
+-Metodo utilizado no vivace: dat.GUI + WebAudio API
+
+Aplicações
+-Vivace
+-Dataflow
