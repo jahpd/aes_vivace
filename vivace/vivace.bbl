@@ -1,0 +1,57 @@
+\begin{thebibliography}{10}
+
+\bibitem{webaudio}
+Chris Rogers,
+\newblock ``Web audio api: W3c working draft,''
+  \url{http://www.w3.org/TR/webaudio/}, 2012.
+
+\bibitem{Vivace}
+Vilson Vieira and Renato Fabbri,
+\newblock ``Vivace,'' \url{http://automata.github.com/vivace}, 2012.
+
+\bibitem{foobarbaz}
+Ricardo~Fabbri Renato~Fabbri, Vilson~Vieira,
+\newblock ``Foobarbaz: Metasyntactic variables,''
+  \url{http://wiki.nosdigitais.teia.org.br/FooBarBaz}, 2011.
+
+\bibitem{nilson2007live}
+Click Nilson,
+\newblock ``Live coding practice,''
+\newblock {\em Proceedings of New Interfaces for Musical Expression (NIME)},
+  2007.
+
+\bibitem{collins2003live}
+Nick Collins, Alex McLean, Julian Rohrhuber, and Adrian Ward,
+\newblock ``Live coding in laptop performance,''
+\newblock {\em Organised Sound}, vol. 8, no. 03, pp. 321--330, 2003.
+
+\bibitem{ward2004live}
+A.~Ward, J.~Rohrhuber, F.~Olofsson, A.~McLean, D.~Griffiths, N.~Collins, and
+  A.~Alexander,
+\newblock ``Live algorithm programming and a temporary organisation for its
+  promotion,''
+\newblock in {\em Proceedings of the README Software Art Conference}, 2004.
+
+\bibitem{collins2011live}
+N.~Collins,
+\newblock ``Live coding of consequence,''
+\newblock {\em Leonardo}, vol. 44, no. 3, pp. 207--211, 2011.
+
+\bibitem{izhaki2008mix}
+Roey Izhaki,
+\newblock {\em Mixing Audio - concepts, pratice and tools},
+\newblock 2008.
+
+\bibitem{audiodata}
+David Humphrey, Corban Brook, Al~MacDonald, Yury Delendik, Ricard Marxer, and
+  Charles Cliffe,
+\newblock ``Audio data api,'' \url{https://wiki.mozilla.org/Audio_Data_API},
+  2010.
+
+\bibitem{fabbri2013}
+Renato Fabbri,
+\newblock {\em Múica no áudio digital: descrição psicofísica e caixa de
+  ferramentas},
+\newblock 2013.
+
+\end{thebibliography}

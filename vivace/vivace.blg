@@ -1,0 +1,49 @@
+This is BibTeX, Version 0.99c (TeX Live 2009/Debian)
+The top-level auxiliary file: vivace.aux
+The style file: aes.bst
+Database file #1: bib.bib
+Warning--can't use both author and editor fields in izhaki2008mix
+Warning--empty publisher in izhaki2008mix
+Warning--empty publisher in fabbri2013
+You've used 10 entries,
+            1855 wiz_defined-function locations,
+            515 strings with 4805 characters,
+and the built_in function-call counts, 1790 in all, are:
+= -- 142
+> -- 89
+< -- 0
++ -- 35
+- -- 25
+* -- 121
+:= -- 296
+add.period$ -- 10
+call.type$ -- 10
+change.case$ -- 8
+chr.to.int$ -- 0
+cite$ -- 13
+duplicate$ -- 75
+empty$ -- 196
+format.name$ -- 25
+if$ -- 396
+int.to.chr$ -- 0
+int.to.str$ -- 10
+missing$ -- 8
+newline$ -- 49
+num.names$ -- 10
+pop$ -- 50
+preamble$ -- 1
+purify$ -- 0
+quote$ -- 0
+skip$ -- 28
+stack$ -- 0
+substring$ -- 50
+swap$ -- 12
+text.length$ -- 0
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 0
+warning$ -- 3
+while$ -- 14
+width$ -- 12
+write$ -- 102
+(There were 3 warnings)
