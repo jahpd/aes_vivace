@@ -7,9 +7,11 @@
 \RequirePackage{url}
 \begin{document}
 \begin{TitlePage}
-        \Title{Título do Artigo}
-        \RunningTitle{Título Curto do Artigo} % short title
+        \Title{Produção de áudio com Web Audio}
+        \RunningTitle{Produção de áudio com Web Audi} % short title
         \RunningAuthors{Fulano et al.}
+        % melhor colcar vc como primeiro autor
+        % pois não estou afiliado a nenhuma universidade mais :P 
         \Author
                 [fulano@email.org]% email
                 {Fulano de Tal}% Author name (printed in title page)
@@ -22,290 +24,299 @@
                                 Cidade, Estado, Código Postal, País
                         }
         \Author
-                [cicrano@email.com]
-                {Cicrano de Tal}
-                \Affilref[A]% mesma afiliação de "fulano" (chave A)
-                                   % the same affiliation as "fulano" (key A)
-        \Author
-                [beltrano@email.fr]
-                {Beltrano de Tal}
-                \Affil
-                                University,
-                                Department of Civil Engineering\\
-                                City, State, Postal Code, Country
-                        }%
+                [gcravista@gmail.com]
+                {Guilherme Martins Lunhani}
+                \Affilref[A]
+                {
+                	Licenciado em música pelo, 
+                	Departamento de Música da UNICAMP, 
+                	Ubatuba, SP, Brasil }
         \Abstract{%
-        
-        }
+        	Tecnologias Web têm se apresentado como um catalisador para o uso
+        	criativo de mídias na Internet. Embora essas tecnologias tenham sido historicamente usadas em aplicações visuais, há recentemente uma preocupação em desenvolver interfaces para o processamento de áudio em navegadores Web. Web Audio API é uma interface que está sendo padronizada para o processamento de áudio em tempo real na Web. Através dela é possível desenvolver aplicações que vão desde sistemas de composição musical em tempo real até mixers distribuídos e colaborativos, sem a necessidade da instalação de plugins proprietários ou configurações complexas. Procurando  contribuir para o desenvolvimento desta tecnologi, introduzimos a Web Audio API através de exemplos simples, na forma de um tutorial e apresentamos aplicações que foram desenvolvidas utilizando essa tecnologia. }
 \end{TitlePage}
-%
-% Digite os títulos das seções EM LETRAS MAIÚSCULAS
-% Type the section titles IN CAPITAL LETTERS.
-\section{INTRODUÇÃO}
 
-Em novembro de 2011, um trio de \emph{live coding} (?) called \emph{FooBarBaz} fez sua primeira apresentação para uma grande audiência (?). Os \emph{performers} usaram duas instâncias do \emph{software} ChucK (?) e uma instância de um \emph{mixer} construído sob PureData (?). Através da edição de arquivos ChucK, dois \emph{live coders} processavam ou sintetizavam amostras sonoras digitais : um primeiro manipulava listas numéricas, criando operações musicais mnemonicas como retrogradação e transposi\c{c}\~a. Um segundo \emph{live coder} criava objetos musicais temporalmente largos, contribuindo para grandes arcos expressivos. A mixagem dos sinais de áudio ficava por conta do terceiro \emph{live coder} através de gestos manuais, captados por uma c\^amera e processados por algoritmos customizados de detec\c{c}\~ao de cor, e interpretados como controles de estereofonia (?).
+\section*{}
 
-Baseados nas experiências de edição, síntese e mixagem citadas, desenvolvemos Vivace: Uma aplicação web (?) dedicada a performance colaborativa no campo do audiovisual. Este artigo apresentará a elaboração e uso das interfaces de edição e mixagem (de áudio) desenvolvidas (fig. X), bem o uso das tecnologias web que viabilizaram ferramentas customizadas. Por fim faremos uma breve reflexão dos processos envolvidos na atividade de edição e mixagens tradicionais com aqueles vivenciados com o uso da mais recente versão do aplicativo.
+Recentemente observamos um encorajamento no desenvolvimento de bibliotecas dedicadas ao processamento de áudio digital em navegadores da \emph{internet}(Web Audio API), o que viabilizou projetos como dataflow-webaudio\footnote{http://forresto.github.com/dataflow-webaudio/, acessado em fevereiro de 2013} e Mix.js\footnote{http://kevincennis.com/mix/, \emph{ibd.}}. No Brasil, o grupo LabMacambira.sf.net\footnote{Grupo de desenvolvedores de software livre, http://labmacambira.sourceforge.net/, ibd.} conta com experimentos como Vivace\footnote{https://github.com/automata/vivace}. Este último é uma proposta de \emph{live coding}\cite{nilson2007live,collins2003live}, no qual é realizada uma performance artística junto a um público, onde intérpretes editam e executam códigos de programação utilizados para processar materiais sonoros e visuais \emph{in live}. 
 
-\section{VIVACE, CONTRAPONTO MUSICAL COLABORATIVO }
+Processos de \emph{criação}, \emph{edição} e \emph{mixagem} são transformados com uso de \emph{aplicativos web}; neste artigo faremos uma breve descrição técnica da Web Audio API, das ferramentas desenvolvidas, e reflexões de seus usos em atividades de produção musical.
 
-Neste ambiente pressupomos uma manipulação artística-técnica de \emph{vozes}, que são amostras de áudio de durações diversas em formato \emph{.wav} e/ou \emph{.mp4}. A manipulação se dá pelo uso das ferramentas desenvolvidas para o contraponto musical (edição) e estereofonia (mixagem)
+\section{CRIAÇÃO, EDIÇÃO E MIXAGEM: UMA REVISÃO DE CONCEITOS E FERRAMENTAS}
+
+Os campos de produção musical e visual compartilham destes termos, onde cada um possui conceitos, ferramentas e técnicas próprias. Neste trabalho trataremos daqueles da produção musical, assim como explanado por \cite{izhaki2008mix}
+
+\begin{figure}[htpb]
+  \begin{center}
+    \includegraphics[scale=.4]{mix_chain.png}
+    \caption{Etapas do processo de produção musical (retirado de IZHAKI)}
+    \label{figure:mix_chain}
+  \end{center}
+\end{figure}
+
+Criação, edição e mixagem são etapas separadas; o primeiro pode adquirir facetas individuais,  enquanto editar e mixar podem se  apresentar como:
 
 \begin{itemize}
-    \item Edição de um código-fonte (que chamaremoss de vivace-lang), responsável pela manipulação dos materiais sonoros.
+    \item edição seletiva: processo de seleção dos materiais sonoros mais adequados, bem como o processo de combinar os materiais escolhidos em um \emph{take} mestre \cite{izhaki2008mix}.
+    \item edição corretiva: processo onde se corrige partes defeituosas dos materiais escolhidos, que podem ter causas diversas: má performance do intérprete, captação inadequada, entre outros \cite{izhaki2008mix}.
+    \item mixagem: Uma etapa do processo de produção musical no qual os materiais - amostrados ou sintetizados - são balanceados, tratados e combinados entre si em um formato multicanal, mais comumente em estereo de dois canais \cite{izhaki2008mix}.
+\end{itemize}
+
+Em grandes estúdios essas etapas se dividem entre o compositor, arranjador, produtor musical e engenheiros de som. De maneira bastante superficial, os dois últimos utilizam um computador com \emph{softwares}(como ProTools, Logic, Nuendo), que pode conter etodas as ferramentas de edição e mixagem.
+
+Acreditamos que com ferramentas \emph{web} podemos agrupar as  três etapas em questão \footnote{Essas três atividades agrupadas é algo que experenciamos durante o \emph{live-coding}: o código-fonte é interpretado pelo computador e logo em seguida transformado em material sonoro por processamento de áudio digital (DSP)} e sociabilizar a produção musical. A criação deixa de ser individual, a edição deixa de ser apenas seletiva ou corretiva, a mixagem deixa de ser apenas uma maneira de balançear os materiais, uma vez que todos podem influenciar em qualquer parte do processo de produção.
+
+\section{WEB AUDIO}
+
+Historicamente as tecnologias Web estiverem focadas em aplicações gráficas. O design de interfaces com o usuário era até então prioridade. Recentemente, a necessidade pela manipulação de mídias fez surgir APIs implementadas diretamente em navegadores Web, que oferecem a possibilidade de manipular áudio e vídeo em tempo real, através de JavaScript. Com o desenvolvimento da versão 5 do padrão HTML, houve a criação de métodos e modelos para manipulação de imagens (através de procedimentos em JavaScript que permitem processar pixel a pixel a matriz de uma imagem, inserida em uma \emph{tag} $<canvas>$), vídeos (por procedimentos que manipulam \emph{tags} $<video>$) e áudio (\emph{tags} $<audio>$).
+
+Porém, aplicações como a síntese e demais operações de processamento de áudio em tempo real não eram possíveis, mesmo usando tais \emph{tags}. A única forma de se processar áudio em tempo real era através do uso de plugins proprietários como \emph{Flash}. Recentemente, Dave Humphrey e colaboradores iniciaram o desenvolvimento de APIs que permitem acesso direto à interface de áudio a partir do browser. A primeira implementação de uma API deste tipo ficou conhecida como Audio Data API, implementada no navegador Mozilla Firefox. Com esse esforço e o reconhecimento da comunidade Web da necessidade de APIs para processamento de áudio em navegadores, o consórcio W3 criou um grupo de trabalho que terminou com o desenvolvimento de uma API padrão para processamento de audio. Essa API ficou conhecida como Web Audio. 
+
+Web Audio é escrita em código nativo (C++ e Assembly) para garantir performance máxima no processamento de áudio em navegadores \emph{Web}\footnote{Atualmente, poucos navegadores tem suporte completo e utilizamos aquele distribuido pelos desenvolvedores \emph{WebKit} (i.e. \emph{Safari} e \emph{Chromium}. Uma implementação para o navegador Mozilla Firefox está em atual desenvolvimento.}. É baseada no paradigma de \emph{grafos de unidades de áudio}, onde se especifica uma coleção de nós e rotinas de conexão e desconexão entre eles (Figura \ref{figure:graph}). Entre algumas de nossas motivações com Web Audio API, estão a síntese, ganho, equalização, expansão multicanal (estereofonia de 2.0 e 5.1 canais) e efeitos (reverb). Ainda, através da Web Audio API podemos tocar um arquivo de áudio (ou \emph{buffers} sintetizados em tempo real por osciladores) em um tempo qualquer, com precisão, além de poder acessar amostras de áudio para análise espectral, por exemplo.
+
+\subsection{Síntese e sampling}
+
+Afim de ressaltar a facilidade do uso de Web Audio para a criação de aplicações Web para processamento de áudio, apresentamos aqui um breve tutorial de seu uso.
+
+Antes de fazer qualquer operação de processamento de áudio, devemos criar um \emph{contexto}. Ali o áudio será processado~\footnote{O conceito de contexto foi inserido em Web Audio para ser compatível com o contexto $<canvas>$ do padrão HTML5}. Criamos um contexto através das seguintes instruções:
+
+\begin{verbatim}
+var contexto = new webkitAudioContext();
+\end{verbatim}
+
+Não há a necessidade de se criar mais de um contexto de áudio para uma mesma página Web. É importante notar que o prefixo \emph{webkit} usado no construtor da classe \emph{AudioContext} é utilizado provisoriamente, até não se ter um padrão único em uso por todos os navegadores.
+
+Após a criação do contexto, podemos criar um \emph{buffer} de áudio para podermos ler arquivos de áudio a partir de um servidor Web remoto ou de arquivos enviados localmente pelo visitante da página. É uma prática comum carregar os arquivos de áudio logo na inicialização da página, pois assim evitamos atrasos na execução. Todo o \emph{buffer} de áudio é não-persistente, e portanto, podemos refazer sua leitura no momento que desejarmos e quantas vezes forem necessárias, sem termos de reler o arquivo de áudio.
+
+O carregamento de um arquivo de áudio é feito através de uma requisição assíncrona por HTTP. Desta forma, fazemos um pedido ao servidor Web para abrir o arquivo de áudio especificado (no caso do exemplo a seguir, o arquivo de nome \emph{foo.wav}) e informamos uma função (\emph{insereNoBuffer}) que irá ler o arquivo em um \emph{buffer}. A requisição é dita assíncrona pois o processo principal de JavaScript não ficará em um estado de espera até o arquivo ser lido e armazenado em \emph{buffer}.
+
+\begin{verbatim}
+requisicao = new XMLHttpRequest();
+
+requisicao.open('GET', 'foo.wav', true);
+
+requisicao.responseType = 'arraybuffer';
+
+requisicao.addEventListener('load', insereNoBuffer, false);
+
+requisicao.send();
+\end{verbatim}
+
+A função \emph{insereNoBuffer}, por sua vez, recebe a requisição e cria um \emph{buffer} fazendo uma chamada ao contexto (todos os métodos e construtores para processamento de áudio são acessíveis a partir do contexto). Por fim, uma variável é usada para referenciar o \emph{buffer}.
+
+\begin{verbatim}
+var fonte;
+
+function insereNoBuffer(evento) {
+    var req = evento.target;
+
+    var bufFonte = contexto.createBufferSource();
+
+    bufFonte.buffer = contexto.createBuffer(req.response, false);
+
+    fonte = bufFonte;
+}
+\end{verbatim}
+
+O processo de se requisitar, ler e inserir em \emph{buffer} é certamente a operação mais complexa e prolíxa. As demais operações possuem uma interface bastante intuitiva e familiar a engenheiros de áudio, por se basear em grafos de unidades.
+
+Além de carregar um arquivo de áudio, é possível sintetizar ondas comuns através de osciladores.
+
+\begin{verbatim}
+var fonte = contexto.createOscillator();
+
+fonte.type = 0;
+\end{verbatim}
+
+Neste caso estamos criando uma onda senoidal, pois especificamos seu tipo como $0$. Podemos ainda criar os tipos de onda quadrada, dente de serra e triangular, que possuem os identificadores 1, 2 e 3, respectivamente.
+
+Após termos criado nossa \emph{fonte} de áudio, seja inicializando-o com amostras de um arquivo ou sintetizadas por um oscilador, podemos executá-lo. Para tal, devemos conectá-lo a um \emph{destino} no contexto.
+
+\begin{verbatim}
+fonte.connect(contexto.destination);
+\end{verbatim}
+
+Para tocarmos o conteúdo da \emph{fonte}, usamos o método \emph{noteOn}, especificando o tempo (em segundos) quando deverá ser tocado. No caso do exemplo a seguir, tocamos a \emph{fonte} no exato momento da chamada do método.
+
+\begin{verbatim}
+buffer.noteOn(0);
+\end{verbatim}
+
+\subsection{Filtros e mixagem}
+
+Por utilizar um paradigma baseado em grafos, a programação com Web Audio torna-se facilitada e familiar ao engenheiro de áudio. Assim como em um sintetizador modular, onde fios (ou \emph{cord patches}) são usados para ligar um módulo ao outro, podemos adicionar uma infinidade de unidade de áudio entre uma \emph{fonte} e um \emph{destino}, interligando-os da maneira que acharmos interessante para nossos fins.
+
+Um exemplo comum em processamento de áudio é utilizar um nó para controle de volume, um filtro baseado em convolução e um compressor para controle dinâmico do sinal sendo sintetizado. Em Web Audio, criamos os nós fazendo chamadas a métodos com o prefixo \emph{create} e armazemos referências a essas unidades que são em seguidas conectadas umas as outras, e por fim, ao destino.
+
+\begin{verbatim}
+var compressor = contexto.createDynamicsCompressor();
+
+var reverb = contexto.createConvolver();
+
+var volume = contexto.createGainNode();
+
+fonte.connect(compressor);
+
+compressor.connect(reverb);
+
+reverb.connect(volume);
+
+volume.connect(contexto.destination);
+
+fonte.noteOn(0);
+\end{verbatim}
+
+\section{APLICAÇÕES: USO DE WEB AUDIO PARA PRODUÇÃO MUSICAL}
+
+Nessa seção abordamos aplicações que utilizam Web Audio para a produção musical. Através da Web Audio API um novo horizonte de possibilidades se abriu para o desenvolvimento de aplicações voltadas para áudio. Por ser acessível através de uma interface concisa a partir de JavaScript, pode ser usada em conjunto com outras tecnologias Web (e.g.\ WebGL) para a criação de efeitos sonoros em jogos, aplicações em visualização musical de forma criativa, sistemas para produção musical com alta fidelidade.
+
+Apresentamos aqui sistemas que foram implementados utilizando a Web Audio API para a mixagem de áudio (Mix.JS), uma linguagem de dataflow para manipulação multimídia (Dataflow-WebAudio) e um sistema para composição em tempo real de um estilo de performance em Música Eletroacústica conhecido como \emph{live coding} (Vivace), criado pelos autores, e o qual abordamos em maiores detalhes.
+
+\subsection{MIX.JS}
+
+Desenvolvido por Kevin Ennis\footnote{http://www.kevincennis.com}, apresenta uma simples interface semelhante a uma mesa de som e um playback da obra \emph{1901}, do grupo "Pheonix" ; apresenta uma \emph{pista} com amostras de instrumentos diversos, controles de ganho, panoramização e visualização do sinal de áudio em um \emph{VUmeter}. O usuário pode experenciar a etapa de mixagem dos materiais já criados, gravados e editados. 
+
+\begin{figure}[htpb]
+  \begin{center}
+    \includegraphics[scale=.4]{mixer.png}
+    \caption{O ambiente vivace}
+    \label{fig:vivace}
+  \end{center}
+\end{figure}
+
+\subsection{DATAFLOW-WEBAUDIO}
+
+Desenvolvido por Forrest Oliphant\footnote{http://forresto.com/}, apreenta uma interface de grafos, onde "caixas" são módulos de áudio e o usuário pode criar uma série de combinações de roteamento entre eles. Se assemelha a \emph{softwares} como Max/MSP e PureData.
+
+\begin{figure}[htpb]
+  \begin{center}
+    \includegraphics[scale=.4]{dataflow.png}
+    \caption{Dataflow}
+    \label{fig:vivace}
+  \end{center}
+\end{figure}
+
+\subsection{VIVACE}
+
+Desenvolvido pelo grupo LabMacambira, viabilizamos um espaço virtual compartilhado como meio para edição e mixagem em performances artísticas. Neste ambiente \ref{figure:vivace} pressupomos a manipulação de \emph{vozes}, que são representações de amostras em formato \emph{.wav} e/ou \emph{.mp4}. Com uso das tecnologias \emph{Web Audio API, share.js e dat.GUI}, desenvolvemos um sistema para edição e mixagem colaborativa:
+
+\begin{figure}[htpb]
+  \begin{center}
+    \includegraphics[scale=.4]{fig_vivace.png}
+    \caption{O ambiente vivace}
+    \label{figure:vivace}
+  \end{center}
+\end{figure}
+
+A figura acima apresenta:
+
+\begin{itemize}
+    \item Edição de um código-fonte (que chamaremos de vivace-lang), responsável pela manipulação dos materiais sonoros.
     \item Um mixer compactado com um controle básico de estereofonia (ganho, panoramização, equalizador de 3 bandas).
 \end{itemize}
 
-Abaixo, temos uma definição das vozes no código-fonte do Vivace, em javascript. Para cada voz definimos um nome, o arquivo a ser utilizado, e seu tipo (no nosso caso, áudio).
- 
-\begin{Verbatim}[fontfamily=courier, xleftmargin=\parindent]
-Vivace.environment = [
-        {name: 'foo', fileName: 'kick.wav', type: 'audio'},
-        {name: 'bar, fileName: 'dj.wav', type: 'audio'},
-        {name: 'baz', fileName: 'snare.wav', type: 'audio'}
-]
-\end{Verbatim}
+\subsubsection{WEB AUDIO API E VIVACE}
 
-\subsection{EDIÇÃO E MIXAGEM}
+Na figura \ref{figure:graph} temos representado uma corrente de nós para cada voz no Vivace. A estratégia utilizada para roteamento, foi criar uma definição de um \emph{mixer} (com as propriedades \emph{gain, pan, high, medium, low}) e aplicá-la através de uma simples sintaxe de grafos:
 
-Utilizando sintaxes relativas a \emph{Orientação a objetos} (???), podemos fazer operarações comuns na prática de composição musical (reverter, inverter, transpor), aplicadas aos \emph{frames} (ref: WebAudio API) da amostra de áudio (FABBRI, R.); "Seja a sequência Ti = {ti} um conjunto ordenado de amostras [frames] reais separadas (...) uma [amostra sonora] de duração \delta se apresenta como uma sequência de b: fac amostras
+\begin{verbatim}
+# UMA DEFINIÇÃO DE UM MIXER
+_mixerDef = function(){
+	this.pan = 0
+    this.compressor = 0
+    ths.reverbTime = 0.1
+    this.gain = Math.sqrt(2)
+    this.high = 2000
+    this.Q_high = 0.5
+    this.gain_high = 0
+    this.medium = 2000
+    this.Q_medium = 0.5
+    this.gain_medium = 0
+    this.low = 2000
+    this.Q_low = 0.5
+    this.gain_low = 0
 
-https://ubuntuone.com/2GUARZyGf8wDCqt5HhidEx Equação 2.1
+# PROCESSO DE ROTEAMENTO (FEITO PARA CADA VOZ)
+# PODEMOS ROTEAR NA FORMA: 
+method = "source=>compressor=>reverb=>low=>medium=>high=>gain=>pan=>destination"
+router('minhavoz', new _mixerDef(), method)
+\end{verbatim}
 
-No Vivace caracterizamos a essas amostras digitais, propriedades de notas musicais. Canonicamente, as notas possuem ao menos duração, volume, altura e timbre.(LACERDA in FABBRI, p.35); adicionamos também o conceito de grão sonoro (SMALLEY?) para as amostras e todas propriedades são passíveis de serem  tratadas quantitativamente (ROEDERER in FABBRI).
+\begin{figure}[htpb]
+  \begin{center}
+    \includegraphics[scale=.5]{fig_chain.png}
+    \caption{Grafo de unidades de áudio e roteamento entre elas no Vivace}
+    \label{figure:graph}
+  \end{center}
+\end{figure}
 
-Através do vivace-lang, o usuário pode definir um conjunto de valores numéricos (\emph{Arrays} de inteiros e decimais) para cada propriedade:
-\begin{itemsize}
-    \item \emph{pos}: posição da amostra (no buffer da voz) a ser tocada, em segundos.
-    \item \emph{dur}: duração da amostra selecionada na voz, em segundos.
-    \item \emph{gdur}: duração do  amostra selecionada na voz, em segundos. 
-    \item \emph{amp}: ganho da voz  .
-\end{itemsize}
+
+\subsubsection{VIVACE-LANG}
+
+Vivace-lang é uma linguagem de domínio específico, parte do ambiente Vivace. A criação de uma nova linguagem proporciona o uso de construções sintáticas flexíveis que permitem produzir musicas de maneira simples e mais familiar a músicos e até mesmo pessoas sem treinamento musical ou computacional. Essa liberdade em se ter uma linguagem que atenda à necessidades técnicas e artísticas permite uma maior flexibilidade de improvisação. E a improvisação, por conseguinte, encontra lugar comum nas práticas de \emph{live coding}. Ter uma linguagem de sintaxe simples, com poucas regras e comandos, diminuem a ocorrência de erros durante a sessão.
+
+Durante a edição do código vivace-lang, realizamos operações comuns na prática de composição musical (reverter, inverter, transpor), aplicadas aos \emph{frames} das amostras de áudio \cite{fabbri2013}: 
+
+No Vivace caracterizamos a essas amostras digitais, propriedades de notas musicais. Canonicamente, as notas possuem ao menos duração, volume, altura e timbre(LACERDA in FABBRI) e são passíveis de serem  tratadas quantitativamente (ROEDERER in FABBRI):
+
+\begin{itemize}
+    \item \emph{pos}: posições da amostra (no buffer da voz) a serem tocadas, em segundos.
+    \item \emph{dur}: durações da amostra selecionada na voz, em segundos.
+    \item \emph{gdur}: durações de cada grão sonoro, da voz, em segundos.
+\end{itemize}
 
 Esses valores podem ser \emph{literais}, \emph{operados} ou \emph{gerados}:
 
-\begin{Verbatim}[fontfamily=courier, xleftmargin=\parindent]
-# [1, 2, 3] são as posições de uma amostra de áudio, em segundos
-foo.pos = [1, 2, 3]                                    # literal
-foo.pos = [.1, .2, .3] reverse                        # operação: o resultado é [0.3, 0.2, 0.1]
-foo.pos = [1, 2, 3] inverse                        # operação: o resultado é [1, 0, -1]
-foo.pos = [1, 2, 3] transpose +2                # operação: o resultado is [3, 4, 5]
-foo.dur = [2, 3, 4]                                    # literal
-foo.dur = [2, 3, 4] reverse                        # operação: o resultado é [4, 3, 2]
-foo.dur = [2, 3, 4] inverse                        # operação: o resultado é [2, 1, 0]
-foo.dur = [2, 3, 4] transpose +1                # operação: o resultado is [3, 4, 5]
+\begin{verbatim}
+#CRIAÇÃO E EDIÇÃO
+foo.pos = [1, 2, 3]
+foo.pos = [.1, .2, .3] reverse                         
+foo.pos = [1, 2, 3] inverse 
+foo.pos = [1, 2, 3] transpose +2  
+foo.dur = [2, 3, 4]  
+foo.dur = [2, 3, 4] reverse 
+foo.dur = [2, 3, 4] inverse
+foo.dur = [2, 3, 4] transpose +1
 
 # podemos gerar esses valores
-foo.pos = [1/i+1 for i in [1, 2, 3]]                 #gerado: o resultado é [1/2, 1/3, 1/4]
+foo.pos = [1/i+1 for i in [1, 2, 3]]
 
 # ou combina-los com as operações
-foo.dur = [1/i+1 for i in [1, 2, 3]] reverse     #gerado: o resultado é [1/4, 1/3, 1/2]
-\end{Verbatim}
+foo.dur = [1/i+1 for i in [1, 2, 3]] reverse
 
-Propriedades sonoras como volume, timbre podem ser manipuladas no vivace-lang através das propriedades das vozes como volume (\emph{amp}) e filtragem (\emph{high, medium, low}). O controle de posições espaciais virtuais das vozes fica por conta propriedade \emph{pan}, que define um espaço estereofônico de dois canais (CONDAMINES)
-
-\begin{Verbatim}[fontfamily=courier, xleftmargin=\parindent]
-# método amp controla o ganho
+#MIXAGEM
 foo.amp = 1                                   
 bar.amp = 0.5
 baz.amp = 0.25
 
-# método pan controla a panoramização 
-# de um sistema estereofônico 
-# de dois canais
 foo.pan = -1    #Esquerdo
 bar.pan = 0    #centro
 baz.pan = 1    #direito
 
-# high: BiquadFilter de frequencias altas
-# medium: BiquadFilter de frequencias medias
-# low: BiquadFilter de frequências baixas
-# freq: a frequencia de corte
-# Q: o fator "qualidade"
-# amp: o ganho do filtro
-foo.high = {freq: 2000, Q: 0.5, amp: 0.75}
-bar.medium = {freq: 800, Q: 1, amp: 0.4}
-baz.low = {freq: 200, Q: 0.5, amp: 0.67}
-\end{Verbatim}
+foo.high = (freq: 2000, Q: 0.5, amp: 0.75)
+bar.medium = (freq: 800, Q: 1, amp: 0.4)
+baz.low = (freq: 200, Q: 0.5, amp: 0.67)
+\end{verbatim}
 
-\section{Máquina de áudio}
+\subsubsection{VIVACE e  dat.GUI}
 
-Antes da API Web Audio, a única forma de utilzar arquivos de áudio era usando plugins (como \emph{Flash}). Criada em 20XY, esta biblioteca permite processamento de áudio em navegadores \emph{web}. As rotinas de áudio são escritas em código nativo (C++ e Assembly) para garantir máxima performance. É baseada no paradigma de \emph{grafos de unidades de áudio}, onde se especifica uma coleção de nós (objeto \emph{AudioNode}) e rotinas de conexão e desconexão entre eles. Manipulando esses nós, podemos criar módulos diversos. Entre algumas de nossas motivações com Web Audio API, estão a síntese, ganho, equalização, expansão multicanal (estereofonia de 2.0 e 5.1 canais) e efeitos (reverb):
+Compreendemos também que este ambiente pode não ser totalmente familiar a músicos ou engnehieos de som; utilizar apenas o vivace-lang tornaria a experiência menos frutífera. Com o uso da biblioteca dat.GUI\footnote{http://workshop.chromeexperiments.com/examples/gui/}, temos uma pequena interface gráfica que lembra uma mesa de som, constituída de \emph{sliders}.
 
 \begin{figure}[htpb]
   \begin{center}
-    \includegraphics[scale=.5]{img/audio_graph.png}
-    \caption{}
-    \label{figura:vivace}
+    \includegraphics[scale=.4]{datgui.png}
+    \caption{interface gráfica do mixer em Vivace}
+    \label{figure:vivace}
   \end{center}
 \end{figure}
 
-Para criar um contexto de áudio (???), primeiro devemos checar a plataforma do navegador; feito isso podemos criar nossos nós de áudio e rotear adequadamente as conexões dos módulos. Abaixo temos um trecho do arquivo api.coffee, onde definimos as vozes para o ambiente vivace-lang e um contexto de áudio que administrará as correntes de processamento de áudio: 
+\section{CONCLUSÕES}
 
-\begin{Verbatim}[fontfamily=courier, xleftmargin=\parindent]
-# arquivo api.coffee, linha 39
-if typeof AudioContext != "undefined" 
-        # para navegadores não-webkit
-        Vivace.audiocontext = new AudioContext() 
-else if typeof webkitAudioContext != "undefined"
-        #para navegadores webkit (chromium e safari)
-        Vivace.audiocontext = new webkitAudioContext()
-else
-        throw new Error 'AudioContext not supported.'
-\end{Verbatim}
+O uso de uma API como Web Audio permite a exploração de aplicações de grande interesse para a engenharia de áudio, composição musical e demais atividades que envolvam o processamento sonoro. Por sua facilidade de programação, possibilita a prototipação de aplicações sonoras, novos instrumentos e experimentações em Música Eletroacústica.
 
-Toda voz no Vivace é representado como uma corrente de nós, como mostrado na figura X. Todas parâmetros das unidades dentro desta corrente (posição espacial, ganho, frequencias de corte de filtros) são definidos em uma variável chamada de \emph{fizzy} e podem ser manipulados editando o código vivace-lang, ou por \emph{sliders} da Interface do Usuário (UI). Este tipo de de interface é mais familiar a músicos e técnicos de som, tornando possível um tratamento estereofônico adequado.
+Apresentamos a API através de exemplos de simples compreensão e aplicações que foram desenvolvidas integralmente pelos autores, assim como outras aplicações e bibliotecas em JavaScript que foram desenvolvidas utilizando Web Audio. É possível notar nessas aplicações que, embora tendo apenas alguns poucos anos de desenvolvimento, a existência desta API acabou por criar uma comunidade de músicos e engenheiros de áudio voltados à sua utilização.
 
-\begin{Verbatim}[fontfamily=courier, xleftmargin=\parindent]
-#some definitions of our mixer
-_mixerDef = () ->
-        this.pan = 0                            # referencia espacial central em 2.0
-        this.gain = Math.sqrt(2)           #  -3dB sound 
-        this.high = 2000                      # 2kHz
-        this.Q_high = 0.5                    # fator Q
-        this.gain_high = 0                   # high gain
-        this.medium = 2000                # 2kHz
-        this.Q_medium = 0.5              # fator Q
-        this.gain_medium = 0             # high gain
-        this.low = 2000                      # 2kHz
-        this.Q_low = 0.5                    # fator Q
-        this.gain_low = 0                   # high gain
-
-#configure audio nodes
-audiofy: (voicename, fizzy, buffer) ->
-    #get audio src
-    voice = Vivace.voices[voicename]
-
-    #create a src node with provided buffer
-    voice.audionodes.src = Vivace.audiocontext.createBufferSource();
-    voice.audionodes.src.buffer = buffer
-
-    #ROUTING PROCESS
-    #to each audio parameter in fizzy, create an appropriate AudioNode
-    $.each fizzy, (k, param) ->
-        #add node gain
-        if k == 'gain' 
-            voice.audionodes[k] = Vivace.audiocontext.createGain()
-            voice.audionodes[k].gain.value = param        
-        #add pan
-        else if k == 'pan' 
-            voice.audionodes[k] = Vivace.audiocontext.createPanner("equalpower", "exponential")
-            voice.audionodes[k].setPosition 0, 0, 0
-        else if k == 'high' 
-            voice.audionodes[k] = Vivace.audiocontext.createBiquadFilter()
-            voice.audionodes[k].type = 1                                                        
-            voice.audionodenes
-\end{Verbatim}
-\section{CONTEÚDO}
-Para garantir que os artigos do Congresso da AES sejam consistentes com os objetivos da AES Brasil, as instruções abaixo devem ser consideradas pelos autores.
-
-O conteúdo técnico deve ser preciso e coerente. Citação a trabalhos anteriores e/ou de terceiros devem ter seus respectivos créditos.
-
-Se o artigo descrever um produto, o conteúdo deve enfocar os aspectos técnicos deste produto (circuito, leiaute, especificações, funções, aplicações, etc.).
-
-Logomarcas de empresas não devem ser usadas. Nomes de empresas e modelos de equipamentos não devem ser colocados no título ou no resumo, e devem ser mínimos no texto (devem-se usar descrições genéricas).
-
-Símbolos e marcas registradas não podem ser colocados no título e/ou no resumo, e preferencialmente não devem ser usadas no texto. Caso marcas registradas apareçam no texto, estas devem indicar junto ao nome o símbolo ``\texttrademark'' e deve-se incluir uma nota de rodapé dizendo quem é (são) o(s) detentor(es) destas marcas. Isso deve ser feito na primeira vez que a(s) marca(s) registrada(s) aparecer(em).
-%
-\subsection{Referências Bibliográficas}
-
-As referências devem ser numeradas e listadas ao final do texto, na seção ``Referências Bibliográfica'', e devem ser citadas no texto consecutivamente em ordem numérica e entre colchetes.
-% Exemplo: [1]
-Pode-se gerar as referências bibliográficas através do comando \verb|\cite| (\cite{Lam94,ClarkAF}). O formato da bibliografia é determinado pelo arquivo de estilo bibliográfico ``aes.bst'' distribuído com esta classe.
-%
-\subsection{Estilo do texto}
-O texto deve ser de fácil entendimento e gramaticamente correto. Palavras e frases não devem ser abreviadas em títulos e resumos, nem da primeira vez que aparecem.
-
-Devem-se usar unidades métricas de acordo com o Sistema Internacional de Unidades (SI) \cite{Inmetro12}. Na Tabela~\ref{tab:units} estão listadas algumas unidades do SI mais freqüentemente usadas, e algumas que não são do SI.
-
-\begin{table}[!ht]
-\caption{Unidades SI e outras}
-\label{tab:units}
-\vspace*{10pt}
-\centering
-\small
-\begin{tabular}{ll}
-\textit{Nome da Unidade}        &       \textit{Símbolo da Unidade}\\ \hline
-ampere                          &       A\\
-bit ou bits                     &       como escrito\\
-bytes                           &       como escrito\\
-decibel                         &       dB\\
-ângulo (geométrico)             &       $^\textrm{o}$\\
-farad                           &       F\\
-gauss                           &       Gs\\
-grama                           &       g\\
-henry                           &       H\\
-hertz                           &       Hz\\
-hora                            &       h\\
-polegada                        &       in\\
-joule                           &       J\\
-kelvin                          &       K\\
-kilohertz                       &       kHz\\
-kilohm                          &       k$\Omega$\\
-litro                           &       l, L\\
-megahertz                       &       MHz\\
-metro                           &       m\\
-microfarad                      &       $\mu$F\\
-micrometro                      &       $\mu$m\\
-microsegundo                    &       $\mu$s\\
-milliampere                     &       mA\\
-millihenry                      &       mH\\
-millimetro                      &       mm\\
-millivolt                       &       mV\\
-minuto (tempo)                  &       min\\
-minuto (geométrico)             &       '\\
-nanosegundo                     &       ns\\
-oersted                         &       Oe\\
-ohm                             &       $\Omega$\\
-pascal                          &       Pa\\
-picofarad                       &       pF\\
-segundo (tempo)                 &       s\\
-segundo (geométrico)            &       "\\
-siemens                         &       S\\
-tesla                           &       T\\
-volt                            &       V\\
-watt                            &       W\\
-weber                           &       Wb\\
-\end{tabular}
-\end{table}
-%\section{DIREITO AUTORAL (COPYRIGHT)}
-O texto entre linhas, contido no topo da primeira página do artigo de Convenção da AES Brasil, é de propriedade da \emph{Audio Engineering Society} e não pode ser reproduzido sem permissão. Os direitos 
-sobre o conteúdo de um artigo de Convenção/Congresso da AES Brasil são do autor ou autores.
-No entanto, submetendo um artigo para apresentação em uma Convenção/Congresso da AES, o autor estará concordando que o \emph{AES Journal} terá a preferência para publicação. Caso aceito para publicação 
-no \emph{AES Journal} ou outro ``\emph{Special Issue}'' da \emph{AES}, será solicitada ao(s) autor(es) a transferência dos direitos autorais.
-%
-
-\section{FIGURAS E TABELAS}
-Figuras, diagramas, gráficos, etc. têm que ser visíveis em impressão preto e branco (P\&B). Se forem coloridos, certifique-se de que as identificações serão coerentes em impressão P\&B. Isso pode ser feito com indicações textuais no próprio gráfico. Use linhas não-menores que 1/2 ponto. As figuras podem ocupar uma ou duas colunas.
-
-Figuras, tabelas e ilustrações devem ser colocadas seqüencialmente no texto, e próximas do local onde se faz referência a elas, sempre que possível. Todas as figuras devem ser numeradas e referenciadas no texto por extenso (por exemplo: ``Figura~\ref{fig:logo}'', e não ``Fig.~\ref{fig:logo}'').
-
-\begin{figure}[h!]
-  \centering
-        \ifpdfout
-            \includegraphics[width=2cm]{aeslogo.pdf}% (pdflatex)
-        \else
-                \includegraphics[width=2cm]{aeslogo.eps}% (latex)
-        \fi
-  \caption{Logotipo da AES}
-  \label{fig:logo}
-\end{figure}
-
-Fotografias e imagens gráficas devem ser salvas em baixa resolução sempre que possível (de 72 a 300 dpi) desde que preservada a qualidade e legibilidade.
-
-\section{EQUAÇÕES}
-As equações devem ser numeradas seqüencialmente, entre parênteses, estando destacadas em linha própria. São citadas no texto da seguinte forma: ``Equação~(\ref{eq:1})''.
-
-Para facilitar a composição de fórmulas, use-se a opção de classe \verb|ams|. Esta opção carrega os pacotes \verb|amsmath|, \verb|amssymb| e \verb|amsthm|. As equações podem ser destadacas em linha própria com o ambiente \verb|equation|. Por exemplo:
-\begin{equation}
-\label{eq:1}
-  \left\{\,
-    x\biggm|\int_{0}^x t^{2}\,dt\leq5
-  \,\right\}.
-\end{equation}
-
-Equações que não couberem em uma coluna podem ser ajustadas em duas linhas; pode-se fazer isso com o pacote \textsf{breqn} usado para quebrar a equação em duas linhas.
-
+Ressaltamos, ao descrever o sistema Vivace, detalhes sobre seu desenvolvimento e como o uso de Web Audio levou à criação de um sistema completo de composição musical em tempo real, voltada a prática de \emph{live coding}. Ainda, a Web por ter natureza descentralizada e colaborativa, permitiu a criação de uma ferramenta como \emph{Mix.JS}, onde pistas de áudio podem ser mixadas por várias pessoas ao mesmo tempo. A facilidade de prototipação, por sua vez, leva a criação de aplicações como \emph{Dataflow}, onde o autor criou uma interface visual para a manipulação de nós de áudio disponíveis na Web Audio, imitando ambientes como \emph{Max/MSP} e \emph{Puredata}.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % BIBLIOGRAPHY EXAMPLE

@@ -1,0 +1,14 @@
+#TeXlipse project settings
+#Sun Feb 10 12:46:39 BRST 2013
+markTmpDer=true
+builderNum=0
+outputDir=output
+makeIndSty=
+bibrefDir=
+outputFormat=dvi
+tempDir=tmp
+mainTexFile=vivace.tex
+outputFile=vivace.dvi
+langSpell=en
+markDer=true
+srcDir=vivace
